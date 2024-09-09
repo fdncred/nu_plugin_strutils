@@ -1,19 +1,35 @@
 [package]
 name = "nu_plugin_strutils"
-version = "0.1.0"
-authors = ["Darren Schroeder <343840+fdncred@users.noreply.github.com>"]
+version = "0.2.0"
+authors = ["Darren Schroeder"]
 edition = "2021"
 description = "a collection of string utilities for nushell"
 license = "MIT"
+repository = "https://github.com/fdncred/nu_plugin_strutils"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-deunicode = "1.6.0"
-# for local development, you can use a path dependency
-nu-plugin = { path = "../nushell/crates/nu-plugin" }
-nu-protocol = { path = "../nushell/crates/nu-protocol", features = ["plugin"] }
+# nushell dependencies
+nu-plugin = "0.97.1"
+nu-protocol = "0.97.1"
+nu-path = "0.97.1"
 
+# for local development, you can use a path dependency
+# nu-plugin = { path = "../nushell/crates/nu-plugin", version = "0.97.2" }
+# nu-protocol = { path = "../nushell/crates/nu-protocol", version = "0.97.2" }
+# nu-path = { path = "../nushell/crates/nu-path", version = "0.97.2" }
+
+deunicode = "1.6.0"
 
 [dev-dependencies]
-nu-plugin-test-support = { path = "../nushell/crates/nu-plugin-test-support" }
+nu-plugin-test-support = "0.97.1"
+# nu-plugin-test-support = { path = "../nushell/crates/nu-plugin-test-support" }
+
+[profile.release]
+opt-level = "s"     # Optimize for size
+strip = "debuginfo"
+lto = "thin"
+
+[profile.dev]
+opt-level = 0
