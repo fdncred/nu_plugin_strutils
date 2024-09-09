@@ -1,10 +1,11 @@
 [package]
 name = "nu_plugin_strutils"
-version = "0.1.0"
-authors = ["Darren Schroeder <343840+fdncred@users.noreply.github.com>"]
+version = "0.2.0"
+authors = ["Darren Schroeder"]
 edition = "2021"
 description = "a collection of string utilities for nushell"
 license = "MIT"
+repository = "https://github.com/fdncred/nu_plugin_strutils"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
