@@ -19,7 +19,7 @@ impl SimplePluginCommand for StrDeunicode {
             .category(Category::Strings)
     }
 
-    fn description(&self) -> &str {
+    fn usage(&self) -> &str {
         "Convert Unicode string to pure ASCII."
     }
 
