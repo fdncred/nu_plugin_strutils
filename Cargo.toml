@@ -1,6 +1,6 @@
 [package]
 name = "nu_plugin_strutils"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Darren Schroeder"]
 edition = "2021"
 description = "a collection of string utilities for nushell"
@@ -21,6 +21,7 @@ nu-path = "0.98.0"
 # nu-path = { path = "../nushell/crates/nu-path", version = "0.98.0" }
 
 deunicode = "1.6.0"
+textdistance = "1.1.0"
 
 [dev-dependencies]
 nu-plugin-test-support = "0.98.0"
