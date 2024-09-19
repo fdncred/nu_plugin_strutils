@@ -1,4 +1,4 @@
-use nu_plugin::{MsgPackSerializer, Plugin, PluginCommand, serve_plugin};
+use nu_plugin::{serve_plugin, MsgPackSerializer, Plugin, PluginCommand};
 
 mod commands;
 pub use commands::*;
@@ -16,6 +16,7 @@ impl Plugin for StrutilsPlugin {
         vec![
             // Commands should be added here
             Box::new(StrDeunicode),
+            Box::new(StrSimilarity),
         ]
     }
 }

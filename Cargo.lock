@@ -1035,6 +1035,7 @@ dependencies = [
  "nu-plugin",
  "nu-plugin-test-support",
  "nu-protocol",
+ "textdistance",
 ]
 
 [[package]]
@@ -1623,6 +1624,12 @@ dependencies = [
  "rustix",
  "windows-sys 0.48.0",
 ]
+
+[[package]]
+name = "textdistance"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f1835c76a9d443834c04539860f3ce46b9d93ef8c260057f939e967ca81180a"
 
 [[package]]
 name = "textwrap"
