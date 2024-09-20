@@ -17,6 +17,7 @@ impl Plugin for StrutilsPlugin {
             // Commands should be added here
             Box::new(StrDeunicode),
             Box::new(StrSimilarity),
+            Box::new(StrCompress),
         ]
     }
 }
