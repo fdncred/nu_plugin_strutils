@@ -177,6 +177,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "brotli"
+version = "6.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74f7971dbd9326d58187408ab83117d8ac1bb9c17b085fdacd1cf2f598719b6b"
+dependencies = [
+ "alloc-no-stdlib",
+ "alloc-stdlib",
+ "brotli-decompressor",
+]
+
+[[package]]
 name = "brotli-decompressor"
 version = "4.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -962,7 +973,7 @@ version = "0.98.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "22d2b192c6f44b22bf6fadebe8cb4c0450c5f3a1ef0760b10a8a34d86a408d37"
 dependencies = [
- "brotli",
+ "brotli 5.0.0",
  "byte-unit",
  "bytes",
  "chrono",
@@ -1028,8 +1039,9 @@ dependencies = [
 
 [[package]]
 name = "nu_plugin_strutils"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
+ "brotli 6.0.0",
  "deunicode",
  "nu-path",
  "nu-plugin",
