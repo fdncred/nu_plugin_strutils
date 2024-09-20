@@ -154,3 +154,25 @@ The output is normalized between 0 and 1
 │  # │         algorithm          │  alias   │
 ╰────┴────────────────────────────┴──────────╯
 ```
+
+### str compress --brotli
+`str compress --brotli` will convert nushell values to a string and then compress that string using brotli with the parameters provided.
+
+#### Usage:
+
+```nushell
+❯ "ABCDEFG" | str compress --brotli
+Length: 11 (0xb) bytes | printable whitespace ascii_other non_ascii
+00000000:   07 03 80 41  42 43 44 45  46 47 03                   ••×ABCDEFG•
+```
+
+
+### str decompress --brotli
+`str decompress --brotli` is meant to be the counter part of `str compress --brotli` and decompress whatever it compresses.
+
+#### Usage:
+
+```nushell
+❯ "ABCDEFG" | str compress --brotli | str decompress --brotli
+ABCDEFG
+```
