@@ -19,6 +19,7 @@ impl Plugin for StrutilsPlugin {
             Box::new(StrSimilarity),
             Box::new(StrCompress),
             Box::new(StrDecompress),
+            Box::new(StrWrap),
         ]
     }
 }
