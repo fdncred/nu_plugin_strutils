@@ -23,6 +23,7 @@ nu-path = "0.99.1"
 deunicode = "1.6.0"
 textdistance = "1.1.0"
 brotli = "7.0.0"
+textwrap = { version = "0.16.1", features = ["hyphenation", "unicode-width", "unicode-linebreak", "smawk"] }
 
 [dev-dependencies]
 nu-plugin-test-support = "0.99.1"
