@@ -20,6 +20,7 @@ impl Plugin for StrutilsPlugin {
             Box::new(StrCompress),
             Box::new(StrDecompress),
             Box::new(StrWrap),
+            Box::new(StrDedent),
         ]
     }
 }
