@@ -41,11 +41,22 @@ impl SimplePluginCommand for StrWrap {
     }
 
     fn examples(&self) -> Vec<Example> {
-        vec![Example {
-            description: "deunicode a string",
-            example: "'A…C' | str deunicode",
-            result: Some(Value::test_string("A...C")),
-        }]
+        vec![
+            Example {
+                description: "Wrap text at 10 columns",
+                example: r#""now is the time for all good men to come to the aid of their country" | str wrap --width 10"#,
+                result: Some(Value::test_string(
+                    "now is the\ntime for\nall good\nmen to\ncome to\nthe aid of\ntheir\ncountry",
+                )),
+            },
+            Example {
+                description: "Wrap text at 10 columns using optimal-fit",
+                example: r#""now is the time for all good men to come to the aid of their country" | str wrap --width 10 --optimal-fit"#,
+                result: Some(Value::test_string(
+                    "now is\nthe time\nfor all\ngood men\nto come\nto the aid\nof their\ncountry",
+                )),
+            },
+        ]
     }
 
     fn run(
@@ -56,7 +67,7 @@ impl SimplePluginCommand for StrWrap {
         input: &Value,
     ) -> Result<Value, LabeledError> {
         // dedent	Removes common leading whitespace from each line.
-        // fill	Fill a line of text at width characters.
+        // fill	    Fill a line of text at width characters.
         // indent	Add prefix to each non-empty line.
         // refill	Refill a paragraph of wrapped text with a new width.
         // unfill	Unpack a paragraph of already-wrapped text.
