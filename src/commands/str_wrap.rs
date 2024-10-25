@@ -66,13 +66,6 @@ impl SimplePluginCommand for StrWrap {
         call: &EvaluatedCall,
         input: &Value,
     ) -> Result<Value, LabeledError> {
-        // dedent	Removes common leading whitespace from each line.
-        // fill	    Fill a line of text at width characters.
-        // indent	Add prefix to each non-empty line.
-        // refill	Refill a paragraph of wrapped text with a new width.
-        // unfill	Unpack a paragraph of already-wrapped text.
-        // wrap	Wrap a line of text at width characters.
-
         let optimal = call.has_flag("optimal-fit")?;
         let width = call.get_flag("width")?.unwrap_or(80usize);
 
