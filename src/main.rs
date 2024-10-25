@@ -21,6 +21,7 @@ impl Plugin for StrutilsPlugin {
             Box::new(StrDecompress),
             Box::new(StrWrap),
             Box::new(StrDedent),
+            Box::new(StrIndent),
         ]
     }
 }

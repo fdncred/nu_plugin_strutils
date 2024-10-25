@@ -1,37 +1,44 @@
 use nu_plugin::{EngineInterface, EvaluatedCall, SimplePluginCommand};
-use nu_protocol::{Category, Example, LabeledError, ShellError, Signature, Span, Type, Value};
-use textwrap::dedent;
+use nu_protocol::{
+    Category, Example, LabeledError, ShellError, Signature, Span, SyntaxShape, Type, Value,
+};
+use textwrap::indent;
 
 use crate::StrutilsPlugin;
 
-pub struct StrDedent;
+pub struct StrIndent;
 
-impl SimplePluginCommand for StrDedent {
+impl SimplePluginCommand for StrIndent {
     type Plugin = StrutilsPlugin;
 
     fn name(&self) -> &str {
-        "str dedent"
+        "str indent"
     }
 
     fn signature(&self) -> Signature {
         Signature::build(self.name())
             .input_output_types(vec![(Type::String, Type::String)])
+            .required(
+                "prefix",
+                SyntaxShape::String,
+                "Prefix used to indent each line with.",
+            )
             .category(Category::Strings)
     }
 
     fn description(&self) -> &str {
-        "Removes common leading whitespace from each line."
+        "Indent each line by the given prefix."
     }
 
     fn search_terms(&self) -> Vec<&str> {
-        vec!["convert", "ascii", "indent", "untab"]
+        vec!["convert", "ascii", "dedent", "tab"]
     }
 
     fn examples(&self) -> Vec<Example> {
         vec![Example {
-            description: "Dedent string",
-            example: "     1st line\r\n       2nd line\r\n     3rd line\r\n | str dedent",
-            result: Some(Value::test_string("1st line\n  2nd line\n3rd line\n")),
+            description: "Indent each line with a provided prefix",
+            example: r#""First line.\nSecond line.\n" | str indent "1111""#,
+            result: Some(Value::test_string("1111First line.\n1111Second line.\n")),
         }]
     }
 
@@ -42,13 +49,15 @@ impl SimplePluginCommand for StrDedent {
         call: &EvaluatedCall,
         input: &Value,
     ) -> Result<Value, LabeledError> {
-        Ok(do_dedent(input, call.head))
+        let prefix: String = call.req(0)?;
+
+        Ok(do_indent(input, prefix, call.head))
     }
 }
 
-fn do_dedent(input: &Value, head: Span) -> Value {
+fn do_indent(input: &Value, prefix: String, head: Span) -> Value {
     match input {
-        Value::String { val, .. } => Value::string(dedent(val), head),
+        Value::String { val, .. } => Value::string(indent(val, &prefix), head),
         Value::Error { .. } => input.clone(),
         _ => Value::error(
             ShellError::OnlySupportsThisInputType {
@@ -72,5 +81,5 @@ fn test_examples() -> Result<(), nu_protocol::ShellError> {
     // We recommend you add this test to any other commands you create, or remove it if the examples
     // can't be tested this way.
 
-    PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrDedent)
+    PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrIndent)
 }
