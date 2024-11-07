@@ -2,6 +2,16 @@
 
 This is a [Nushell](https://nushell.sh/) plugin called "strutils".
 
+## Available Commands
+
+* `str compress` - Compress a string using brotli, flate, or zlib
+* `str decompress` - Decompress a string using brotli, flate, or zlib
+* `str dedent` - Remove common leading whitespace from text
+* `str deunicode` - Replace unicode characters with ASCII counterparts
+* `str indent` - Add leading spaces to each line of text
+* `str similarity` - Calculate edit distance between strings using various algorithms
+* `str wrap` - Wrap text to a specified width
+
 ## Installing
 
 ```nushell
@@ -155,10 +165,12 @@ The output is normalized between 0 and 1
 ╰────┴────────────────────────────┴──────────╯
 ```
 
-### str compress --brotli
-`str compress --brotli` will convert nushell values to a string and then compress that string using brotli with the parameters provided.
+### str compress
+`str compress` will convert nushell values to a string and then compress that string using the specified method with the parameters provided.
 
 #### Usage:
+
+##### Brotli
 
 ```nushell
 ❯ "ABCDEFG" | str compress --brotli
@@ -166,13 +178,82 @@ Length: 11 (0xb) bytes | printable whitespace ascii_other non_ascii
 00000000:   07 03 80 41  42 43 44 45  46 47 03                   ••×ABCDEFG•
 ```
 
+##### Flate
 
-### str decompress --brotli
-`str decompress --brotli` is meant to be the counter part of `str compress --brotli` and decompress whatever it compresses.
+```nushell
+❯ "ABCDEFG" | str compress --flate
+Length: 13 (0xd) bytes | printable whitespace ascii_other non_ascii
+00000000:   73 74 72 76  71 75 73 07  00                         strvqus•0
+```
+
+##### Zlib
+
+```nushell
+❯ "ABCDEFG" | str compress --zlib
+Length: 15 (0xf) bytes | printable whitespace ascii_other non_ascii
+00000000:   78 5e 73 74  72 76 71 75  73 07 00 07  5b 01 dd      x^strvqus•0•[•×
+```
+
+### str decompress
+`str decompress` is meant to be the counterpart of `str compress` and decompress whatever it compresses.
 
 #### Usage:
+
+##### Brotli
 
 ```nushell
 ❯ "ABCDEFG" | str compress --brotli | str decompress --brotli
 ABCDEFG
+```
+
+##### Flate
+
+```nushell
+❯ "ABCDEFG" | str compress --flate | str decompress --flate
+ABCDEFG
+```
+
+##### Zlib
+
+```nushell
+❯ "ABCDEFG" | str compress --zlib | str decompress --zlib
+ABCDEFG
+```
+
+### str dedent
+`str dedent` removes common leading whitespace from every line in a text while preserving relative indentation.
+
+#### Usage:
+
+```nushell
+❯ "    line 1\n    line 2\n    line 3" | str dedent
+line 1
+line 2
+line 3
+```
+
+### str indent
+`str indent` adds a specified number of leading spaces to each line in a text.
+
+#### Usage:
+
+```nushell
+❯ "line 1\nline 2\nline 3" | str indent 4
+    line 1
+    line 2
+    line 3
+```
+
+### str wrap
+`str wrap` wraps each line in a text to a specified width.
+
+#### Usage:
+
+```nushell
+❯ "This is a long line that needs to be wrapped." | str wrap 10
+This is a
+long line
+that needs
+to be
+wrapped.
 ```

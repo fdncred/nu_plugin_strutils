@@ -1,4 +1,6 @@
 use crate::StrutilsPlugin;
+use flate2::write::{DeflateEncoder, ZlibEncoder};
+use flate2::Compression;
 use nu_plugin::{EngineInterface, EvaluatedCall, SimplePluginCommand};
 use nu_protocol::{
     Category, ErrSpan, Example, IntoSpanned, LabeledError, ShellError, Signature, Span, Spanned,
@@ -7,7 +9,7 @@ use nu_protocol::{
 use std::io::Write;
 
 const BUFFER_SIZE: usize = 65536;
-const DEFAULT_QUALITY: u32 = 3; // 1 doesn't seem to work well. 3 is a good balance of speed and compression
+const DEFAULT_QUALITY: u32 = 3;
 const DEFAULT_WINDOW_SIZE: u32 = 20;
 
 pub struct StrCompress;
@@ -23,6 +25,8 @@ impl SimplePluginCommand for StrCompress {
         Signature::build(self.name())
             .input_output_type(Type::Any, Type::Binary)
             .switch("brotli", "Use brotli compression", Some('b'))
+            .switch("flate", "Use flate compression", Some('f'))
+            .switch("zlib", "Use zlib compression", Some('z'))
             .named(
                 "quality",
                 SyntaxShape::Int,
@@ -47,15 +51,27 @@ impl SimplePluginCommand for StrCompress {
     }
 
     fn search_terms(&self) -> Vec<&str> {
-        vec!["convert", "ascii"]
+        vec!["convert", "ascii", "compress", "flate", "zlib"]
     }
 
     fn examples(&self) -> Vec<Example> {
-        vec![Example {
-            description: "Compress a json string",
-            example: "ls | to json | str compress --brotli",
-            result: None,
-        }]
+        vec![
+            Example {
+                description: "Compress a json string using brotli",
+                example: "ls | to json | str compress --brotli",
+                result: None,
+            },
+            Example {
+                description: "Compress a json string using flate",
+                example: "ls | to json | str compress --flate",
+                result: None,
+            },
+            Example {
+                description: "Compress a json string using zlib",
+                example: "ls | to json | str compress --zlib",
+                result: None,
+            },
+        ]
     }
 
     fn run(
@@ -79,8 +95,74 @@ impl SimplePluginCommand for StrCompress {
         let quality = call.get_flag("quality")?.map(to_u32).transpose()?;
         let window_size = call.get_flag("window-size")?.map(to_u32).transpose()?;
 
-        do_brotli(input, quality, window_size, config, call.head)
+        let use_brotli = call.has_flag("brotli")?;
+        let use_flate = call.has_flag("flate")?;
+        let use_zlib = call.has_flag("zlib")?;
+
+        match (use_brotli, use_flate, use_zlib) {
+            (true, false, false) => do_brotli(input, quality, window_size, config, call.head),
+            (false, true, false) => do_flate(input, quality, config, call.head),
+            (false, false, true) => do_zlib(input, quality, config, call.head),
+            (false, false, false) => do_brotli(input, quality, window_size, config, call.head), // default to brotli
+            _ => Err(LabeledError::new(
+                "Only one compression method can be used at a time",
+            )),
+        }
     }
+}
+
+fn do_flate(
+    input: &Value,
+    quality: Option<Spanned<u32>>,
+    config: std::sync::Arc<nu_protocol::Config>,
+    head: Span,
+) -> Result<Value, LabeledError> {
+    let value_span = input.span();
+    let value = input.to_expanded_string("", &config);
+    let mut out_buf = vec![];
+    let compression_level = quality.map(|q| q.item).unwrap_or(DEFAULT_QUALITY);
+    let mut writer = DeflateEncoder::new(&mut out_buf, Compression::new(compression_level.into()));
+
+    write_value(&mut writer, value, value_span)?;
+    let _ = writer
+        .finish()
+        .err_span(head)
+        .map_err(|err| ShellError::GenericError {
+            error: err.item.to_string(),
+            msg: "Error writing to flate compressor".to_string(),
+            span: Some(value_span),
+            help: None,
+            inner: vec![],
+        })?;
+
+    Ok(Value::binary(out_buf, value_span))
+}
+
+fn do_zlib(
+    input: &Value,
+    quality: Option<Spanned<u32>>,
+    config: std::sync::Arc<nu_protocol::Config>,
+    head: Span,
+) -> Result<Value, LabeledError> {
+    let value_span = input.span();
+    let value = input.to_expanded_string("", &config);
+    let mut out_buf = vec![];
+    let compression_level = quality.map(|q| q.item).unwrap_or(DEFAULT_QUALITY);
+    let mut writer = ZlibEncoder::new(&mut out_buf, Compression::new(compression_level.into()));
+
+    write_value(&mut writer, value, value_span)?;
+    let _ = writer
+        .finish()
+        .err_span(head)
+        .map_err(|err| ShellError::GenericError {
+            error: err.item.to_string(),
+            msg: "Error writing to zlib compressor".to_string(),
+            span: Some(value_span),
+            help: None,
+            inner: vec![],
+        })?;
+
+    Ok(Value::binary(out_buf, value_span))
 }
 
 fn do_brotli(
