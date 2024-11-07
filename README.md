@@ -249,11 +249,28 @@ line 3
 
 #### Usage:
 
+Wrap text at 10 columns
 ```nushell
-❯ "This is a long line that needs to be wrapped." | str wrap 10
-This is a
-long line
-that needs
-to be
-wrapped.
+> "now is the time for all good men to come to the aid of their country" | str wrap --width 10
+now is the
+time for
+all good
+men to
+come to
+the aid of
+their
+country
+```
+
+Wrap text at 10 columns using optimal-fit
+```nushell
+> "now is the time for all good men to come to the aid of their country" | str wrap --width 10 --optimal-fit
+now is
+the time
+for all
+good men
+to come
+to the aid
+of their
+country
 ```
