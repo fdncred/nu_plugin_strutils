@@ -29,7 +29,7 @@ impl SimplePluginCommand for StrDecompress {
     }
 
     fn search_terms(&self) -> Vec<&str> {
-        vec!["convert", "ascii", "decompress", "flate", "zlib"]
+        vec!["convert", "ascii", "compress", "brotli", "flate", "zlib"]
     }
 
     fn examples(&self) -> Vec<Example> {
