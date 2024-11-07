@@ -238,7 +238,7 @@ line 3
 #### Usage:
 
 ```nushell
-❯ "line 1\nline 2\nline 3" | str indent 4
+❯ "line 1\nline 2\nline 3" | str indent "    "
     line 1
     line 2
     line 3
