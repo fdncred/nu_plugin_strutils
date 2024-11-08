@@ -223,3 +223,153 @@ fn test_examples() -> Result<(), nu_protocol::ShellError> {
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrCompress)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_test_input(text: &str) -> Value {
+        Value::string(text, Span::test_data())
+    }
+
+    fn create_test_config() -> std::sync::Arc<nu_protocol::Config> {
+        std::sync::Arc::new(nu_protocol::Config::default())
+    }
+
+    #[test]
+    fn test_do_brotli() -> Result<(), ShellError> {
+        let input = create_test_input("Nushell");
+        let config = create_test_config();
+
+        // Test default parameters
+        let result = do_brotli(&input, None, None, config.clone(), Span::test_data())?;
+        let expected = Value::binary(
+            vec![
+                0x7, 0x3, 0x80, 0x4e, 0x75, 0x73, 0x68, 0x65, 0x6c, 0x6c, 0x3,
+            ],
+            Span::test_data(),
+        );
+
+        assert!(result.as_binary()?.len() > 0);
+        assert_eq!(result, expected);
+
+        // Test with custom quality
+        let spanned_data = Spanned {
+            item: 11u32,
+            span: Span::test_data(),
+        };
+        let quality = Some(spanned_data);
+        let result = do_brotli(&input, quality, None, config.clone(), Span::test_data())?;
+        let expected = Value::binary(
+            vec![
+                0x7, 0x3, 0x80, 0x4e, 0x75, 0x73, 0x68, 0x65, 0x6c, 0x6c, 0x3,
+            ],
+            Span::test_data(),
+        );
+
+        assert!(result.as_binary()?.len() > 0);
+        assert_eq!(result, expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_do_flate() -> Result<(), ShellError> {
+        let input = create_test_input("Nushell");
+        let config = create_test_config();
+
+        // Test default quality
+        let result = do_flate(&input, None, config.clone(), Span::test_data())?;
+        let expected = Value::binary(
+            vec![0xf3, 0x2b, 0x2d, 0xce, 0x48, 0xcd, 0xc9, 0x1, 0x0],
+            Span::test_data(),
+        );
+
+        assert!(result.as_binary()?.len() > 0);
+        assert_eq!(result, expected);
+
+        // Test with custom quality
+        let spanned_data = Spanned {
+            item: 9u32,
+            span: Span::test_data(),
+        };
+
+        let quality = Some(spanned_data);
+        let result = do_flate(&input, quality, config.clone(), Span::test_data())?;
+        let expected = Value::binary(
+            vec![0xf3, 0x2b, 0x2d, 0xce, 0x48, 0xcd, 0xc9, 0x1, 0x0],
+            Span::test_data(),
+        );
+
+        assert!(result.as_binary()?.len() > 0);
+        assert_eq!(result, expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_do_zlib() -> Result<(), ShellError> {
+        let input = create_test_input("Nushell");
+        let config = create_test_config();
+
+        // Test default quality
+        let result = do_zlib(&input, None, config.clone(), Span::test_data())?;
+        let expected = Value::binary(
+            vec![
+                0x78, 0x5e, 0xf3, 0x2b, 0x2d, 0xce, 0x48, 0xcd, 0xc9, 0x1, 0x0, 0xb, 0x39, 0x2,
+                0xdc,
+            ],
+            Span::test_data(),
+        );
+
+        assert!(result.as_binary()?.len() > 0);
+        assert_eq!(result, expected);
+
+        // Test with custom quality
+        let spanned_data = Spanned {
+            item: 9u32,
+            span: Span::test_data(),
+        };
+
+        let quality = Some(spanned_data);
+        let result = do_zlib(&input, quality, config.clone(), Span::test_data())?;
+        let expected = Value::binary(
+            vec![
+                0x78, 0xda, 0xf3, 0x2b, 0x2d, 0xce, 0x48, 0xcd, 0xc9, 0x1, 0x0, 0xb, 0x39, 0x2,
+                0xdc,
+            ],
+            Span::test_data(),
+        );
+
+        assert!(result.as_binary()?.len() > 0);
+        assert_eq!(result, expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_compression_with_empty_input() -> Result<(), ShellError> {
+        let input = create_test_input("");
+        let config = create_test_config();
+
+        // Each compression method should handle empty input
+        do_brotli(&input, None, None, config.clone(), Span::test_data())?;
+        do_flate(&input, None, config.clone(), Span::test_data())?;
+        do_zlib(&input, None, config.clone(), Span::test_data())?;
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_compression_with_large_input() -> Result<(), ShellError> {
+        let large_input = create_test_input(&"x".repeat(1000000));
+        let config = create_test_config();
+
+        // Each compression method should handle large input
+        do_brotli(&large_input, None, None, config.clone(), Span::test_data())?;
+        do_flate(&large_input, None, config.clone(), Span::test_data())?;
+        do_zlib(&large_input, None, config.clone(), Span::test_data())?;
+
+        Ok(())
+    }
+}
