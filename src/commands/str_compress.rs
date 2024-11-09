@@ -9,6 +9,9 @@ use nu_protocol::{
 use std::io::Write;
 
 const BUFFER_SIZE: usize = 65536;
+// brotli 0 - 11
+// flate 0 - 9
+// zlib 0 - 9
 const DEFAULT_QUALITY: u32 = 3;
 const DEFAULT_WINDOW_SIZE: u32 = 20;
 
@@ -30,13 +33,13 @@ impl SimplePluginCommand for StrCompress {
             .named(
                 "quality",
                 SyntaxShape::Int,
-                "Quality between 0 and 11. 11 is smallest but takes longest to encode (default 3)",
+                "Quality between 0 and 11 (brotli), 0 - 9 (flate, zlib). The higher the compression the longer it takes to encode (default brotli 3)",
                 Some('q'),
             )
             .named(
                 "window-size",
                 SyntaxShape::Int,
-                "Log of how big the ring buffer should be for copying prior data. Window size for brotli compression (default 20)",
+                "Log of how big the ring buffer should be for copying prior data. Window size only for brotli compression (default 20)",
                 Some('w'),
             )
             .category(Category::Strings)
@@ -99,6 +102,22 @@ impl SimplePluginCommand for StrCompress {
         let use_flate = call.has_flag("flate")?;
         let use_zlib = call.has_flag("zlib")?;
 
+        // only allow window_size for brotli
+        if (use_flate && window_size.is_some()) || (use_zlib && window_size.is_some()) {
+            return Err(LabeledError::new(
+                "Window size is only for brotli compression",
+            ));
+        };
+
+        // only allow quality level of 11 for brotli, if quality level for flate or zlib is greater than 9, set to 9
+        if (use_brotli && quality.map(|q| q.item > 11).unwrap_or(false))
+            || (quality.map(|q| q.item > 9).unwrap_or(false) && (use_flate || use_zlib))
+        {
+            return Err(LabeledError::new(
+                "Quality level is only between 0 and 11 for brotli, 0 and 9 for flate and zlib",
+            ));
+        };
+
         match (use_brotli, use_flate, use_zlib) {
             (true, false, false) => do_brotli(input, quality, window_size, config, call.head),
             (false, true, false) => do_flate(input, quality, config, call.head),
@@ -120,6 +139,7 @@ fn do_flate(
     let value_span = input.span();
     let value = input.to_expanded_string("", &config);
     let mut out_buf = vec![];
+    // flate compression level is 0-9
     let compression_level = quality.map(|q| q.item).unwrap_or(DEFAULT_QUALITY);
     let mut writer = DeflateEncoder::new(&mut out_buf, Compression::new(compression_level.into()));
 
@@ -147,6 +167,7 @@ fn do_zlib(
     let value_span = input.span();
     let value = input.to_expanded_string("", &config);
     let mut out_buf = vec![];
+    // zlib compression level is 0 - 9
     let compression_level = quality.map(|q| q.item).unwrap_or(DEFAULT_QUALITY);
     let mut writer = ZlibEncoder::new(&mut out_buf, Compression::new(compression_level.into()));
 
@@ -175,6 +196,7 @@ fn do_brotli(
     let value_span = input.span();
     let value = input.to_expanded_string("", &config);
     let mut out_buf = vec![];
+    // brotli quality is 0 - 11 (compression level)
     let mut writer = brotli::CompressorWriter::new(
         &mut out_buf,
         BUFFER_SIZE,
