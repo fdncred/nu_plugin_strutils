@@ -30,7 +30,7 @@ impl SimplePluginCommand for StrDedent {
     fn examples(&self) -> Vec<Example> {
         vec![Example {
             description: "Dedent string",
-            example: "     1st line\r\n       2nd line\r\n     3rd line\r\n | str dedent",
+            example: "'     1st line\r\n       2nd line\r\n     3rd line\r\n' | str dedent",
             result: Some(Value::test_string("1st line\n  2nd line\n3rd line\n")),
         }]
     }
