@@ -22,6 +22,7 @@ impl Plugin for StrutilsPlugin {
             Box::new(StrWrap),
             Box::new(StrDedent),
             Box::new(StrIndent),
+            Box::new(StrSlug),
         ]
     }
 }

@@ -25,6 +25,7 @@ textdistance = "1.1.1"
 brotli = "7.0.0"
 textwrap = { version = "0.16.1", features = ["hyphenation", "unicode-width", "unicode-linebreak", "smawk"] }
 flate2 = "1.0.35"
+slug = "0.1.6"
 
 [dev-dependencies]
 nu-plugin-test-support = "0.102.0"
