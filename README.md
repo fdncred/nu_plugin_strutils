@@ -10,6 +10,7 @@ This is a [Nushell](https://nushell.sh/) plugin called "strutils".
 * `str deunicode` - Replace unicode characters with ASCII counterparts
 * `str indent` - Add leading spaces to each line of text
 * `str similarity` - Calculate edit distance between strings using various algorithms
+* `str slug` - Convert a string to a slug (URL/filename friendly)
 * `str wrap` - Wrap text to a specified width
 
 ## Installing
@@ -242,6 +243,21 @@ line 3
     line 1
     line 2
     line 3
+```
+
+### str slug
+`str slug` converts a string to a URL or filename-friendly slug.
+
+#### Usage:
+
+```nushell
+> "Hello, World!" | str slug
+hello-world
+```
+
+```nushell
+> "Æúű--cool?" | str slug
+aeuu-cool
 ```
 
 ### str wrap
