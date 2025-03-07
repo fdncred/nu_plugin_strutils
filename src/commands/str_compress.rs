@@ -141,7 +141,7 @@ fn do_flate(
     let mut out_buf = vec![];
     // flate compression level is 0-9
     let compression_level = quality.map(|q| q.item).unwrap_or(DEFAULT_QUALITY);
-    let mut writer = DeflateEncoder::new(&mut out_buf, Compression::new(compression_level));
+    let mut writer = DeflateEncoder::new(&mut out_buf, Compression::new(compression_level.into()));
 
     write_value(&mut writer, value, value_span)?;
     let _ = writer
@@ -169,7 +169,7 @@ fn do_zlib(
     let mut out_buf = vec![];
     // zlib compression level is 0 - 9
     let compression_level = quality.map(|q| q.item).unwrap_or(DEFAULT_QUALITY);
-    let mut writer = ZlibEncoder::new(&mut out_buf, Compression::new(compression_level));
+    let mut writer = ZlibEncoder::new(&mut out_buf, Compression::new(compression_level.into()));
 
     write_value(&mut writer, value, value_span)?;
     let _ = writer
@@ -272,7 +272,7 @@ mod tests {
             Span::test_data(),
         );
 
-        assert!(!result.as_binary()?.is_empty());
+        assert!(result.as_binary()?.len() > 0);
         assert_eq!(result, expected);
 
         // Test with custom quality
@@ -289,7 +289,7 @@ mod tests {
             Span::test_data(),
         );
 
-        assert!(!result.as_binary()?.is_empty());
+        assert!(result.as_binary()?.len() > 0);
         assert_eq!(result, expected);
 
         Ok(())
@@ -307,7 +307,7 @@ mod tests {
             Span::test_data(),
         );
 
-        assert!(!result.as_binary()?.is_empty());
+        assert!(result.as_binary()?.len() > 0);
         assert_eq!(result, expected);
 
         // Test with custom quality
@@ -323,7 +323,7 @@ mod tests {
             Span::test_data(),
         );
 
-        assert!(!result.as_binary()?.is_empty());
+        assert!(result.as_binary()?.len() > 0);
         assert_eq!(result, expected);
 
         Ok(())
@@ -344,7 +344,7 @@ mod tests {
             Span::test_data(),
         );
 
-        assert!(!result.as_binary()?.is_empty());
+        assert!(result.as_binary()?.len() > 0);
         assert_eq!(result, expected);
 
         // Test with custom quality
@@ -363,7 +363,7 @@ mod tests {
             Span::test_data(),
         );
 
-        assert!(!result.as_binary()?.is_empty());
+        assert!(result.as_binary()?.len() > 0);
         assert_eq!(result, expected);
 
         Ok(())
