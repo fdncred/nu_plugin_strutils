@@ -68,3 +68,64 @@ fn test_examples() -> Result<(), nu_protocol::ShellError> {
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrSlug)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use nu_protocol::Span;
+
+    #[test]
+    fn test_basic_slugification() {
+        let input = Value::string("Hello World", Span::test_data());
+        let expected = "hello-world";
+
+        match do_slug(&input, Span::test_data()) {
+            Value::String { val, .. } => assert_eq!(val, expected),
+            _ => panic!("Expected string value"),
+        }
+    }
+
+    #[test]
+    fn test_special_characters() {
+        let input = Value::string("User@example.com", Span::test_data());
+        let expected = "user-example-com";
+
+        match do_slug(&input, Span::test_data()) {
+            Value::String { val, .. } => assert_eq!(val, expected),
+            _ => panic!("Expected string value"),
+        }
+    }
+
+    #[test]
+    fn test_multiple_hyphens() {
+        let input = Value::string("test--it   now!", Span::test_data());
+        let expected = "test-it-now";
+
+        match do_slug(&input, Span::test_data()) {
+            Value::String { val, .. } => assert_eq!(val, expected),
+            _ => panic!("Expected string value"),
+        }
+    }
+
+    #[test]
+    fn test_leading_trailing_hyphens() {
+        let input = Value::string("  --test_-_cool", Span::test_data());
+        let expected = "test-cool";
+
+        match do_slug(&input, Span::test_data()) {
+            Value::String { val, .. } => assert_eq!(val, expected),
+            _ => panic!("Expected string value"),
+        }
+    }
+
+    #[test]
+    fn test_unicode_characters() {
+        let input = Value::string("Æúű--cool?", Span::test_data());
+        let expected = "aeuu-cool";
+
+        match do_slug(&input, Span::test_data()) {
+            Value::String { val, .. } => assert_eq!(val, expected),
+            _ => panic!("Expected string value"),
+        }
+    }
+}
