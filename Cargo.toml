@@ -1,6 +1,6 @@
 [package]
 name = "nu_plugin_strutils"
-version = "0.9.0"
+version = "0.10.0"
 authors = ["Darren Schroeder"]
 edition = "2021"
 description = "a collection of string utilities for nushell"
@@ -11,24 +11,24 @@ repository = "https://github.com/fdncred/nu_plugin_strutils"
 
 [dependencies]
 # nushell dependencies
-nu-plugin = "0.102.0"
-nu-protocol = "0.102.0"
-nu-path = "0.102.0"
+nu-plugin = "0.103.0"
+nu-protocol = "0.103.0"
+nu-path = "0.103.0"
 
 # for local development, you can use a path dependency
 # nu-plugin = { path = "../nushell/crates/nu-plugin", version = "0.98.0" }
 # nu-protocol = { path = "../nushell/crates/nu-protocol", version = "0.98.0" }
 # nu-path = { path = "../nushell/crates/nu-path", version = "0.98.0" }
 
-deunicode = "1.6.0"
+deunicode = "1.6.1"
 textdistance = "1.1.1"
 brotli = "7.0.0"
 textwrap = { version = "0.16.1", features = ["hyphenation", "unicode-width", "unicode-linebreak", "smawk"] }
-flate2 = "1.0.35"
+flate2 = "1.1.0"
 slug = "0.1.6"
 
 [dev-dependencies]
-nu-plugin-test-support = "0.102.0"
+nu-plugin-test-support = "0.103.0"
 # nu-plugin-test-support = { path = "../nushell/crates/nu-plugin-test-support" }
 
 [profile.release]
