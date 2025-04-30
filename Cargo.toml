@@ -1,6 +1,6 @@
 [package]
 name = "nu_plugin_strutils"
-version = "0.10.0"
+version = "0.11.0"
 authors = ["Darren Schroeder"]
 edition = "2021"
 description = "a collection of string utilities for nushell"
@@ -20,11 +20,11 @@ nu-path = "0.104.0"
 # nu-protocol = { path = "../nushell/crates/nu-protocol", version = "0.98.0" }
 # nu-path = { path = "../nushell/crates/nu-path", version = "0.98.0" }
 
-deunicode = "1.6.1"
+deunicode = "1.6.2"
 textdistance = "1.1.1"
-brotli = "7.0.0"
-textwrap = { version = "0.16.1", features = ["hyphenation", "unicode-width", "unicode-linebreak", "smawk"] }
-flate2 = "1.1.0"
+brotli = "8.0.0"
+textwrap = { version = "0.16.2", features = ["hyphenation", "unicode-width", "unicode-linebreak", "smawk"] }
+flate2 = "1.1.1"
 slug = "0.1.6"
 
 [dev-dependencies]
