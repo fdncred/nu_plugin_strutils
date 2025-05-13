@@ -9,6 +9,8 @@ This is a [Nushell](https://nushell.sh/) plugin called "strutils".
 * `str dedent` - Remove common leading whitespace from text
 * `str deunicode` - Replace unicode characters with ASCII counterparts
 * `str indent` - Add leading spaces to each line of text
+* `str shl-split` - Parse an argument string with Unix rules similar to Python's shlex.split and GLib's g_shell_parse_argv.
+* `str shl-quote` - Escapes special characters in a string, so that it will retain its literal meaning when used as a part of command in Unix shell.
 * `str similarity` - Calculate edit distance between strings using various algorithms
 * `str slug` - Convert a string to a slug (URL/filename friendly)
 * `str wrap` - Wrap text to a specified width
@@ -243,6 +245,29 @@ line 3
     line 1
     line 2
     line 3
+```
+
+### str shl-split
+`str shl-split` parses an argument string with Unix rules similar to Python's shlex.split and GLib's g_shell_parse_argv.
+
+### Usage:
+
+```nushell
+❯ " a # very long comment \n b # another comment" | str shl-split
+╭───┬───╮
+│ 0 │ a │
+│ 1 │ b │
+╰───┴───╯
+```
+
+### str shl-quote
+`str shl-quote` escapes special characters in a string, so that it will retain its literal meaning when used as a part of command in Unix shell.
+
+### Usage:
+
+```nushell
+❯ "'" | str shl-quote
+''\'''
 ```
 
 ### str slug

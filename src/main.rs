@@ -23,6 +23,8 @@ impl Plugin for StrutilsPlugin {
             Box::new(StrDedent),
             Box::new(StrIndent),
             Box::new(StrSlug),
+            Box::new(StrShlSplit),
+            Box::new(StrShlQuote),
         ]
     }
 }

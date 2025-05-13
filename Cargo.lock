@@ -126,9 +126,9 @@ dependencies = [
 
 [[package]]
 name = "brotli"
-version = "8.0.0"
+version = "8.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf19e729cdbd51af9a397fb9ef8ac8378007b797f8273cfbfdf45dcaa316167b"
+checksum = "9991eea70ea4f293524138648e41ee89b0b2b12ddef3b255effa43c8056e0e0d"
 dependencies = [
  "alloc-no-stdlib",
  "alloc-stdlib",
@@ -1015,15 +1015,16 @@ dependencies = [
 
 [[package]]
 name = "nu_plugin_strutils"
-version = "0.11.0"
+version = "0.12.0"
 dependencies = [
- "brotli 8.0.0",
+ "brotli 8.0.1",
  "deunicode",
  "flate2",
  "nu-path",
  "nu-plugin",
  "nu-plugin-test-support",
  "nu-protocol",
+ "shell-words",
  "slug",
  "textdistance",
  "textwrap",
@@ -1422,6 +1423,12 @@ dependencies = [
  "time",
  "tzdb",
 ]
+
+[[package]]
+name = "shell-words"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24188a676b6ae68c3b2cb3a01be17fbf7240ce009799bb56d5b1409051e78fde"
 
 [[package]]
 name = "shlex"
