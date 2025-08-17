@@ -26,7 +26,7 @@ brotli = "8.0.1"
 textwrap = { version = "0.16.2", features = ["hyphenation", "unicode-width", "unicode-linebreak", "smawk"] }
 flate2 = "1.1.2"
 slug = "0.1.6"
-shell-words = "1.1.0"
+shell-words = { git = "https://github.com/tmiasko/shell-words", rev = "efe8162286fd684e7e4e7552c6ec303446675318" }
 
 [dev-dependencies]
 nu-plugin-test-support = "0.106.0"
