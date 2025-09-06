@@ -1,41 +1,41 @@
 [package]
-name = "nu_plugin_strutils"
-version = "0.14.0"
-authors = ["Darren Schroeder"]
-edition = "2024"
-description = "a collection of string utilities for nushell"
-license = "MIT"
-repository = "https://github.com/fdncred/nu_plugin_strutils"
+  authors    =["Darren Schroeder"]
+  description="a collection of string utilities for nushell"
+  edition    ="2024"
+  license    ="MIT"
+  name       ="nu_plugin_strutils"
+  repository ="https://github.com/fdncred/nu_plugin_strutils"
+  version    ="0.14.0"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+  # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# nushell dependencies
-nu-plugin = "0.106.0"
-nu-protocol = "0.106.0"
-nu-path = "0.106.0"
+  # nushell dependencies
+  nu-path    ="0.107.0"
+  nu-plugin  ="0.107.0"
+  nu-protocol="0.107.0"
 
-# for local development, you can use a path dependency
-# nu-plugin = { path = "../nushell/crates/nu-plugin", version = "0.98.0" }
-# nu-protocol = { path = "../nushell/crates/nu-protocol", version = "0.98.0" }
-# nu-path = { path = "../nushell/crates/nu-path", version = "0.98.0" }
+  # for local development, you can use a path dependency
+  # nu-plugin = { path = "../nushell/crates/nu-plugin", version = "0.98.0" }
+  # nu-protocol = { path = "../nushell/crates/nu-protocol", version = "0.98.0" }
+  # nu-path = { path = "../nushell/crates/nu-path", version = "0.98.0" }
 
-deunicode = "1.6.2"
-textdistance = "1.1.1"
-brotli = "8.0.1"
-textwrap = { version = "0.16.2", features = ["hyphenation", "unicode-width", "unicode-linebreak", "smawk"] }
-flate2 = "1.1.2"
-slug = "0.1.6"
-shell-words = "1.1.0"
+  brotli      ="8.0.1"
+  deunicode   ="1.6.2"
+  flate2      ="1.1.2"
+  shell-words ="1.1.0"
+  slug        ="0.1.6"
+  textdistance="1.1.1"
+  textwrap    ={version="0.16.2", features=["hyphenation", "smawk", "unicode-linebreak", "unicode-width"]}
 
 [dev-dependencies]
-nu-plugin-test-support = "0.106.0"
-# nu-plugin-test-support = { path = "../nushell/crates/nu-plugin-test-support" }
+  nu-plugin-test-support="0.107.0"
+  # nu-plugin-test-support = { path = "../nushell/crates/nu-plugin-test-support" }
 
 [profile.release]
-opt-level = "s"     # Optimize for size
-strip = "debuginfo"
-lto = "thin"
+  lto      ="thin"
+  opt-level="s"         # Optimize for size
+  strip    ="debuginfo"
 
 [profile.dev]
-opt-level = 0
+  opt-level=0
