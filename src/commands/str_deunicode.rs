@@ -27,7 +27,7 @@ impl SimplePluginCommand for StrDeunicode {
         vec!["convert", "ascii"]
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![Example {
             description: "deunicode a string",
             example: "'A…C' | str deunicode",

@@ -1,7 +1,7 @@
 use crate::StrutilsPlugin;
 use nu_plugin::{EngineInterface, EvaluatedCall, PluginCommand, SimplePluginCommand};
 use nu_protocol::{
-    record, Category, Example, LabeledError, Signature, Span, Spanned, SyntaxShape, Value,
+    Category, Example, LabeledError, Signature, Span, Spanned, SyntaxShape, Value, record,
 };
 use std::vec;
 use textdistance::{nstr, str};
@@ -37,7 +37,7 @@ impl SimplePluginCommand for StrSimilarity {
             .category(Category::Experimental)
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![
             Example {
                 description: "Compare two strings for similarity",
@@ -45,14 +45,12 @@ impl SimplePluginCommand for StrSimilarity {
                 result: Some(Value::test_int(1)),
             },
             Example {
-                description:
-                    "Compare two strings for similarity and normalize the output value",
+                description: "Compare two strings for similarity and normalize the output value",
                 example: "'nutshell' | str similarity -n 'nushell'",
                 result: Some(Value::test_float(0.125)),
             },
             Example {
-                description: "Compare two strings for similarity using a specific algorithm"
-                    ,
+                description: "Compare two strings for similarity using a specific algorithm",
                 example: "'nutshell' | str similarity 'nushell' -a levenshtein",
                 result: Some(Value::test_int(1)),
             },

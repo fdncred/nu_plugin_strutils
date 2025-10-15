@@ -27,7 +27,7 @@ impl SimplePluginCommand for StrSlug {
         vec!["convert", "slug", "url", "filename"]
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![Example {
             description: "Slugify a string",
             example: r#""Hello, World!" | str slug"#,

@@ -2,7 +2,7 @@ use nu_plugin::{EngineInterface, EvaluatedCall, SimplePluginCommand};
 use nu_protocol::{
     Category, Example, LabeledError, ShellError, Signature, Span, SyntaxShape, Type, Value,
 };
-use textwrap::{fill, Options, WrapAlgorithm};
+use textwrap::{Options, WrapAlgorithm, fill};
 
 use crate::StrutilsPlugin;
 
@@ -40,7 +40,7 @@ impl SimplePluginCommand for StrWrap {
         vec!["convert", "ascii"]
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![
             Example {
                 description: "Wrap text at 10 columns",

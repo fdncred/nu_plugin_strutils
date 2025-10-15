@@ -32,7 +32,7 @@ impl SimplePluginCommand for StrDecompress {
         vec!["convert", "ascii", "compress", "brotli", "flate", "zlib"]
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![
             Example {
                 description: "Decompress a brotli-compressed string",
@@ -74,7 +74,7 @@ impl SimplePluginCommand for StrDecompress {
                         return Err(LabeledError::new(
                             "Only one decompression method can be used at a time",
                         )
-                        .with_label("Multiple compression flags specified", call.head))
+                        .with_label("Multiple compression flags specified", call.head));
                     }
                 };
 

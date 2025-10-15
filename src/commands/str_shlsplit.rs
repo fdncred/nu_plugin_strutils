@@ -36,7 +36,7 @@ In case those unsupported shell features are present, the syntax that introduce 
         vec!["args", "split", "posix", "argv"]
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![
             Example {
                 description: "Parse the arguments and ignore the comments",
@@ -85,7 +85,7 @@ fn do_split(input: &Value, head: Span) -> Value {
                             inner: Vec::new(),
                         },
                         head,
-                    )
+                    );
                 }
             };
             Value::list(args, head)

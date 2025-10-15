@@ -1,6 +1,6 @@
 use crate::StrutilsPlugin;
-use flate2::write::{DeflateEncoder, ZlibEncoder};
 use flate2::Compression;
+use flate2::write::{DeflateEncoder, ZlibEncoder};
 use nu_plugin::{EngineInterface, EvaluatedCall, SimplePluginCommand};
 use nu_protocol::{
     Category, ErrSpan, Example, IntoSpanned, LabeledError, ShellError, Signature, Span, Spanned,
@@ -57,7 +57,7 @@ impl SimplePluginCommand for StrCompress {
         vec!["convert", "ascii", "decompress", "brotli", "flate", "zlib"]
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![
             Example {
                 description: "Compress a json string using brotli",

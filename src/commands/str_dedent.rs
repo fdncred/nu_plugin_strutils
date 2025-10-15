@@ -27,7 +27,7 @@ impl SimplePluginCommand for StrDedent {
         vec!["convert", "ascii", "indent", "untab"]
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![Example {
             description: "Dedent string",
             example: "'     1st line\r\n       2nd line\r\n     3rd line\r\n' | str dedent",

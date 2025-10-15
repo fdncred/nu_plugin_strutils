@@ -34,7 +34,7 @@ impl SimplePluginCommand for StrIndent {
         vec!["convert", "ascii", "dedent", "tab"]
     }
 
-    fn examples(&self) -> Vec<Example> {
+    fn examples(&self) -> Vec<Example<'_>> {
         vec![Example {
             description: "Indent each line with a provided prefix",
             example: r#""First line.\nSecond line.\n" | str indent "1111""#,
