@@ -115,3 +115,19 @@ fn test_examples() -> Result<(), nu_protocol::ShellError> {
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrShlSplit)
 }
+
+#[test]
+fn declared_output_type() -> Result<(), nu_protocol::ShellError> {
+    use nu_plugin_test_support::PluginTest;
+
+    let last = Box::new(nu_command::Last);
+
+    // currently fails at `eval` since nushell doesn't compile the block ("Can't evaluate block in IR mode")
+    let result = PluginTest::new("strutils", StrutilsPlugin.into())?
+        .add_decl(last)?
+        .eval("'hello --world' | str shl-split | first")?
+        .into_value(Span::test_data())?;
+
+    assert_eq!(Value::test_string("hello"), result);
+    Ok(())
+}
