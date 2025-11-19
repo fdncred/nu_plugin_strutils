@@ -14,7 +14,10 @@ impl SimplePluginCommand for StrShlSplit {
 
     fn signature(&self) -> Signature {
         Signature::build(self.name())
-            .input_output_types(vec![(Type::String, Type::String)])
+            .input_output_types(vec![
+                (Type::String, Type::String),
+                (Type::String, Type::list(Type::String)),
+            ])
             .category(Category::Strings)
     }
 
