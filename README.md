@@ -4,14 +4,14 @@ This is a [Nushell](https://nushell.sh/) plugin called "strutils".
 
 ## Available Commands
 
-* `str compress` - Compress a string using brotli, flate, or zlib
+* `str similarity` - Calculate edit distance between strings using various * `str compress` - Compress a string using brotli, flate, or zlib
 * `str decompress` - Decompress a string using brotli, flate, or zlib
 * `str dedent` - Remove common leading whitespace from text
-* `str deunicode` - Replace unicode characters with ASCII counterparts
 * `str indent` - Add leading spaces to each line of text
+* `str deunicode` - Replace unicode characters with ASCII counterparts
 * `str shl-split` - Parse an argument string with Unix rules similar to Python's shlex.split and GLib's g_shell_parse_argv.
 * `str shl-quote` - Escapes special characters in a string, so that it will retain its literal meaning when used as a part of command in Unix shell.
-* `str similarity` - Calculate edit distance between strings using various algorithms
+algorithms
 * `str slug` - Convert a string to a slug (URL/filename friendly)
 * `str wrap` - Wrap text to a specified width
 
@@ -19,23 +19,14 @@ This is a [Nushell](https://nushell.sh/) plugin called "strutils".
 
 ```nushell
 > cargo install --path .
+> plugin add ~/.cargo/bin/nu_plugin_strutils
+> plugin use strutils
 ```
 
 ## String utilities for nushell
 
 This plugin implements a some string utilities that are not included in nushell.
 
-### str deunicode
-`str deunicode` replaces unicode accented characters with their ASCII counterparts based on the [deunicode crate](https://docs.rs/deunicode/latest/deunicode/).
-
-#### Usage:
-
-```nushell
-> plugin add ~/.cargo/bin/nu_plugin_strutils
-> plugin use strutils
-> 'A…C' | str deunicode
-A...C
-```
 
 ### str similarity
 `str similarity` is an older plugin that I thought fit here since this is a common plugin for string utilities.
@@ -245,6 +236,16 @@ line 3
     line 1
     line 2
     line 3
+```
+
+### str deunicode
+`str deunicode` replaces unicode accented characters with their ASCII counterparts based on the [deunicode crate](https://docs.rs/deunicode/latest/deunicode/).
+
+#### Usage:
+
+```nushell
+> 'A…C' | str deunicode
+A...C
 ```
 
 ### str shl-split
