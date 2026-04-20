@@ -1,6 +1,9 @@
 use crate::StrutilsPlugin;
 use nu_plugin::{EngineInterface, EvaluatedCall, SimplePluginCommand};
-use nu_protocol::{Category, Example, LabeledError, ShellError, Signature, Span, Type, Value};
+use nu_protocol::{
+    Category, Example, LabeledError, ShellError, Signature, Span, Type, Value,
+    shell_error::generic::GenericError,
+};
 use shell_words::split;
 
 pub struct StrShlSplit;
@@ -80,13 +83,11 @@ fn do_split(input: &Value, head: Span) -> Value {
                 Ok(args) => args.into_iter().map(|s| Value::string(s, head)).collect(),
                 Err(err) => {
                     return Value::error(
-                        ShellError::GenericError {
-                            msg: "Failed to parse string".into(),
-                            error: err.to_string(),
-                            span: Some(head),
-                            help: None,
-                            inner: Vec::new(),
-                        },
+                        ShellError::Generic(GenericError::new(
+                            err.to_string(),
+                            String::from("Failed to parse string"),
+                            head,
+                        )),
                         head,
                     );
                 }

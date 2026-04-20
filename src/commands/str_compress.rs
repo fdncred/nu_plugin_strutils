@@ -4,7 +4,7 @@ use flate2::write::{DeflateEncoder, ZlibEncoder};
 use nu_plugin::{EngineInterface, EvaluatedCall, SimplePluginCommand};
 use nu_protocol::{
     Category, ErrSpan, Example, IntoSpanned, LabeledError, ShellError, Signature, Span, Spanned,
-    SyntaxShape, Type, Value,
+    SyntaxShape, Type, Value, shell_error::generic::GenericError,
 };
 use std::io::Write;
 
@@ -144,16 +144,13 @@ fn do_flate(
     let mut writer = DeflateEncoder::new(&mut out_buf, Compression::new(compression_level));
 
     write_value(&mut writer, value, value_span)?;
-    let _ = writer
-        .finish()
-        .err_span(head)
-        .map_err(|err| ShellError::GenericError {
-            error: err.item.to_string(),
-            msg: "Error writing to flate compressor".to_string(),
-            span: Some(value_span),
-            help: None,
-            inner: vec![],
-        })?;
+    let _ = writer.finish().err_span(head).map_err(|err| {
+        ShellError::Generic(GenericError::new(
+            err.item.to_string(),
+            "Error writing to flate compressor".to_string(),
+            value_span,
+        ))
+    })?;
 
     Ok(Value::binary(out_buf, value_span))
 }
@@ -172,16 +169,13 @@ fn do_zlib(
     let mut writer = ZlibEncoder::new(&mut out_buf, Compression::new(compression_level));
 
     write_value(&mut writer, value, value_span)?;
-    let _ = writer
-        .finish()
-        .err_span(head)
-        .map_err(|err| ShellError::GenericError {
-            error: err.item.to_string(),
-            msg: "Error writing to zlib compressor".to_string(),
-            span: Some(value_span),
-            help: None,
-            inner: vec![],
-        })?;
+    let _ = writer.finish().err_span(head).map_err(|err| {
+        ShellError::Generic(GenericError::new(
+            err.item.to_string(),
+            "Error writing to zlib compressor".to_string(),
+            value_span,
+        ))
+    })?;
 
     Ok(Value::binary(out_buf, value_span))
 }
@@ -205,30 +199,26 @@ fn do_brotli(
     );
 
     write_value(&mut writer, value, value_span)?;
-    let _ = writer
-        .flush()
-        .err_span(head)
-        .map_err(|err| ShellError::GenericError {
-            error: err.item.to_string(),
-            msg: "Error writing to brotli compressor".to_string(),
-            span: Some(value_span),
-            help: None,
-            inner: vec![],
-        });
+    let _ = writer.flush().err_span(head).map_err(|err| {
+        ShellError::Generic(GenericError::new(
+            err.item.to_string(),
+            "Error writing to brotli compressor".to_string(),
+            value_span,
+        ))
+    });
     drop(writer);
 
     Ok(Value::binary(out_buf, value_span))
 }
 
 fn write_value(out: &mut impl std::io::Write, value: String, span: Span) -> Result<(), ShellError> {
-    out.write_all(value.as_bytes())
-        .map_err(|err| ShellError::GenericError {
-            error: err.to_string(),
-            msg: "Error writing to brotli compressor".to_string(),
-            span: Some(span),
-            help: None,
-            inner: vec![],
-        })?;
+    out.write_all(value.as_bytes()).map_err(|err| {
+        ShellError::Generic(GenericError::new(
+            err.to_string(),
+            "Error writing to brotli compressor".to_string(),
+            span,
+        ))
+    })?;
 
     Ok(())
 }
