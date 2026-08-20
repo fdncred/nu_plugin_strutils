@@ -37,6 +37,10 @@ impl SimplePluginCommand for StrBetween {
         "Return the substring between two delimiters."
     }
 
+    fn extra_description(&self) -> &str {
+        "If either delimiter is missing, an empty string is returned unless --strict is set."
+    }
+
     fn search_terms(&self) -> Vec<&str> {
         vec!["split", "substring", "extract", "slice"]
     }

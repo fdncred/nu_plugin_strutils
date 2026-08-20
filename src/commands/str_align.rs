@@ -72,6 +72,10 @@ impl SimplePluginCommand for StrAlign {
         input: &Value,
     ) -> Result<Value, LabeledError> {
         let separator: String = call.get_flag("separator")?.unwrap_or_else(|| "\t".into());
+        if separator.is_empty() {
+            return Err(LabeledError::new("separator cannot be empty")
+                .with_label("provide a non-empty column separator", call.head));
+        }
         let padding: usize = call.get_flag("padding")?.unwrap_or(2);
         let min_width: usize = call.get_flag("min-width")?.unwrap_or(2);
 
@@ -123,9 +127,7 @@ fn align_text(
     let bytes = tw
         .into_inner()
         .map_err(|e| std::io::Error::other(e.error().to_string()))?;
-    // tabwriter may leave a trailing newline; keep the input's trailing-newline shape
-    // by using the aligned bytes as utf-8 and trimming a single extra trailing newline
-    // only when the input had none.
+    // TabWriter always ends with a newline; drop it when the input had none.
     let mut out = String::from_utf8(bytes).map_err(|_| {
         std::io::Error::new(
             std::io::ErrorKind::InvalidData,
@@ -187,5 +189,13 @@ mod tests {
     #[test]
     fn rejects_non_string_input() {
         super::super::test_support::assert_rejects("42 | str align");
+    }
+
+    #[test]
+    fn empty_separator_errors() {
+        super::super::test_support::assert_error_contains(
+            r#""a,b" | str align --separator """#,
+            "separator cannot be empty",
+        );
     }
 }

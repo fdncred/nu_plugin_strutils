@@ -7,14 +7,11 @@ pub struct StrutilsPlugin;
 
 impl Plugin for StrutilsPlugin {
     fn version(&self) -> String {
-        // This automatically uses the version of your package from Cargo.toml as the plugin version
-        // sent to Nushell
         env!("CARGO_PKG_VERSION").into()
     }
 
     fn commands(&self) -> Vec<Box<dyn PluginCommand<Plugin = Self>>> {
         vec![
-            // Commands should be added here
             Box::new(StrDeunicode),
             Box::new(StrSimilarity),
             Box::new(StrCompress),

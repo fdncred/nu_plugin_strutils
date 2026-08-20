@@ -81,8 +81,6 @@ fn do_wrap(input: &Value, optimal: bool, width: usize, head: Span) -> Value {
     });
 
     match input {
-        // fill returns a string with the text wrapped at the specified width
-        // wrap returns a list of strings with the text wrapped at the specified width
         Value::String { val, .. } => Value::string(fill(val, options), head),
         Value::Error { .. } => input.clone(),
         _ => Value::error(
@@ -100,12 +98,6 @@ fn do_wrap(input: &Value, optimal: bool, width: usize, head: Span) -> Value {
 #[test]
 fn test_examples() -> Result<(), nu_protocol::ShellError> {
     use nu_plugin_test_support::PluginTest;
-
-    // This will automatically run the examples specified in your command and compare their actual
-    // output against what was specified in the example.
-    //
-    // We recommend you add this test to any other commands you create, or remove it if the examples
-    // can't be tested this way.
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrWrap)
 }

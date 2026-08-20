@@ -37,6 +37,10 @@ impl SimplePluginCommand for StrBefore {
         "Return the substring before a delimiter."
     }
 
+    fn extra_description(&self) -> &str {
+        "If the delimiter is missing, the original string is returned unless --strict is set."
+    }
+
     fn search_terms(&self) -> Vec<&str> {
         vec!["split", "substring", "prefix", "extract"]
     }

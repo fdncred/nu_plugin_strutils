@@ -20,7 +20,7 @@ impl SimplePluginCommand for StrSimilarity {
     }
     fn signature(&self) -> Signature {
         Signature::build(PluginCommand::name(self))
-            .required("string", SyntaxShape::String, "String to compare with")
+            .optional("string", SyntaxShape::String, "String to compare with")
             .switch(
                 "normalize",
                 "Normalize the results between 0 and 1",
@@ -56,7 +56,7 @@ impl SimplePluginCommand for StrSimilarity {
             },
             Example {
                 description: "List all the included similarity algorithms",
-                example: "str similarity 'nu' --list",
+                example: "str similarity --list",
                 result: None,
             },
             Example {
@@ -79,31 +79,30 @@ impl SimplePluginCommand for StrSimilarity {
         call: &EvaluatedCall,
         input: &Value,
     ) -> Result<Value, LabeledError> {
-        let compare_to_str_optn: Option<Spanned<String>> = call.opt(0)?;
-        let compare_to_str = match compare_to_str_optn {
-            Some(p) => p,
-            None => {
-                return Err(LabeledError::new("found nothing")
-                    .with_label("Expected a string as a parameter", call.head));
-            }
-        };
-        let normalize = call.has_flag("normalize")?;
         let list = call.has_flag("list")?;
         if list {
-            return Ok(list_algorithms());
+            return Ok(list_algorithms(call.head));
         }
-        let algo: Option<String> = call.get_flag("algorithm")?;
-        let sim = match algo {
-            Some(a) => a.to_string(),
-            None => "levenshtein".to_string(),
-        };
+
+        let compare_to_str: Spanned<String> = call.opt(0)?.ok_or_else(|| {
+            LabeledError::new("missing required argument")
+                .with_label("expected a string to compare with", call.head)
+        })?;
+        let normalize = call.has_flag("normalize")?;
+        let sim = call
+            .get_flag::<String>("algorithm")?
+            .unwrap_or_else(|| "levenshtein".into());
+        if compute(&sim, "", "", false).is_none() {
+            return Err(LabeledError::new("unknown algorithm")
+                .with_label(format!("{sim} is not a known algorithm"), call.head));
+        }
         let all = call.has_flag("all")?;
         let input_span = input.span();
 
         let ret_val = match input {
             Value::String { val: input_val, .. } => {
                 if all {
-                    compute_all(&compare_to_str.item, input_val, normalize)?
+                    compute_all(&compare_to_str.item, input_val, normalize, input_span)?
                 } else {
                     compare_strings(&sim, compare_to_str, normalize, input_val, input_span)?
                 }
@@ -121,8 +120,7 @@ impl SimplePluginCommand for StrSimilarity {
     }
 }
 
-fn compute_all(s1: &str, s2: &str, norm: bool) -> Result<Value, LabeledError> {
-    let span = Span::unknown();
+fn compute_all(s1: &str, s2: &str, norm: bool, span: Span) -> Result<Value, LabeledError> {
     let algos = vec![
         "bag",
         "cosine",
@@ -153,24 +151,25 @@ fn compute_all(s1: &str, s2: &str, norm: bool) -> Result<Value, LabeledError> {
     let mut rows = vec![];
     for algo in algos {
         let sim = Value::string(algo.to_string(), span);
-        let val_comp = compute(algo, s1, s2, norm);
+        let val_comp = compute(algo, s1, s2, norm).unwrap_or(0.0);
         let val = if val_comp.fract() == 0.0 {
             Value::int(val_comp as i64, span)
         } else {
             Value::float(val_comp, span)
         };
-        rows.push(Value::test_record(
+        rows.push(Value::record(
             record! { "algorithm" => sim, "distance" => val },
+            span,
         ));
     }
 
-    Ok(Value::test_list(rows))
+    Ok(Value::list(rows, span))
 }
 
 #[rustfmt::skip]
-fn compute(a: &str, s1: &str, s2: &str, norm: bool) -> f64 {
+fn compute(a: &str, s1: &str, s2: &str, norm: bool) -> Option<f64> {
     let sim = a.to_lowercase();
-    match sim.as_str() {
+    Some(match sim.as_str() {
         "bag" => if norm { nstr::bag(s1, s2) } else {str::bag(s1, s2) as f64},
         "cos" | "cosine" => if norm { nstr::cosine(s1, s2) } else {str::cosine(s1, s2)},
         "dlev" | "damerau_levenshtein" => if norm { nstr::damerau_levenshtein(s1, s2) } else {str::damerau_levenshtein(s1, s2) as f64},
@@ -196,41 +195,50 @@ fn compute(a: &str, s1: &str, s2: &str, norm: bool) -> f64 {
         "suf" | "suffix" => if norm { nstr::suffix(s1, s2) } else {str::suffix(s1, s2) as f64},
         "tv" | "tversky" => if norm { nstr::tversky(s1, s2) } else {str::tversky(s1, s2)},
         "ybo" | "yujian_bo" => if norm { nstr::yujian_bo(s1, s2) } else {str::yujian_bo(s1, s2)},
-        _ => if norm { nstr::levenshtein(s1, s2) } else {str::levenshtein(s1, s2) as f64},
-    }
+        _ => return None,
+    })
 }
 
 #[rustfmt::skip]
-fn list_algorithms() -> Value {
+fn list_algorithms(span: Span) -> Value {
+    let row = |algorithm: &str, short: &str| {
+        Value::record(
+            record! {
+                "algorithm" => Value::string(algorithm, span),
+                "short" => Value::string(short, span),
+            },
+            span,
+        )
+    };
     let rows = vec![
-        Value::test_record(record! { "algorithm" => Value::test_string("bag"), "short" => Value::test_string("bag")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("cosine"), "short" => Value::test_string("cos")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("damerau_levenshtein"), "short" => Value::test_string("dlev")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("entropy_ncd"), "short" => Value::test_string("entncd")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("hamming"), "short" => Value::test_string("ham")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("jaccard"), "short" => Value::test_string("jac")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("jaro"), "short" => Value::test_string("jar")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("jaro_winkler"), "short" => Value::test_string("jarw")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("levenshtein"), "short" => Value::test_string("lev")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("longest_common_subsequence"), "short" => Value::test_string("lcsubseq")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("longest_common_substring"), "short" => Value::test_string("lcsubstr")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("length"), "short" => Value::test_string("len")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("lig3"), "short" => Value::test_string("lig")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("mlipns"), "short" => Value::test_string("mli")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("overlap"), "short" => Value::test_string("olap")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("prefix"), "short" => Value::test_string("pre")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("ratcliff_obershelp"), "short" => Value::test_string("rat")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("roberts"), "short" => Value::test_string("rob")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("sift4_common"), "short" => Value::test_string("scom")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("sift4_simple"), "short" => Value::test_string("ssim")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("smith_waterman"), "short" => Value::test_string("smithw")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("sorensen_dice"), "short" => Value::test_string("soredice")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("suffix"), "short" => Value::test_string("suf")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("tversky"), "short" => Value::test_string("tv")}),
-        Value::test_record(record! { "algorithm" => Value::test_string("yujian_bo"), "short" => Value::test_string("ybo")}),
+        row("bag", "bag"),
+        row("cosine", "cos"),
+        row("damerau_levenshtein", "dlev"),
+        row("entropy_ncd", "entncd"),
+        row("hamming", "ham"),
+        row("jaccard", "jac"),
+        row("jaro", "jar"),
+        row("jaro_winkler", "jarw"),
+        row("levenshtein", "lev"),
+        row("longest_common_subsequence", "lcsubseq"),
+        row("longest_common_substring", "lcsubstr"),
+        row("length", "len"),
+        row("lig3", "lig"),
+        row("mlipns", "mli"),
+        row("overlap", "olap"),
+        row("prefix", "pre"),
+        row("ratcliff_obershelp", "rat"),
+        row("roberts", "rob"),
+        row("sift4_common", "scom"),
+        row("sift4_simple", "ssim"),
+        row("smith_waterman", "smithw"),
+        row("sorensen_dice", "soredice"),
+        row("suffix", "suf"),
+        row("tversky", "tv"),
+        row("yujian_bo", "ybo"),
     ];
 
-    Value::test_list(rows)
+    Value::list(rows, span)
 }
 
 fn compare_strings(
@@ -243,7 +251,10 @@ fn compare_strings(
     let compare_from = input_val;
     let compare_to = compare_to_str.item;
 
-    let a_val = compute(sim_algo, compare_from, &compare_to, normalize);
+    let a_val = compute(sim_algo, compare_from, &compare_to, normalize).ok_or_else(|| {
+        LabeledError::new("unknown algorithm")
+            .with_label(format!("{sim_algo} is not a known algorithm"), input_span)
+    })?;
 
     if a_val.fract() == 0.0 {
         Ok(Value::int(a_val as i64, input_span))
@@ -255,12 +266,6 @@ fn compare_strings(
 #[test]
 fn test_examples() -> Result<(), nu_protocol::ShellError> {
     use nu_plugin_test_support::PluginTest;
-
-    // This will automatically run the examples specified in your command and compare their actual
-    // output against what was specified in the example.
-    //
-    // We recommend you add this test to any other commands you create, or remove it if the examples
-    // can't be tested this way.
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrSimilarity)
 }
@@ -279,7 +284,7 @@ mod tests {
 
     #[test]
     fn list_returns_all_algorithms() {
-        let rows = eval_list("str similarity 'nu' --list");
+        let rows = eval_list("str similarity --list");
         assert_eq!(rows.len(), 25);
         let first = rows[0].as_record().expect("record");
         assert!(first.contains("algorithm"));
@@ -308,11 +313,11 @@ mod tests {
     }
 
     #[test]
-    fn unknown_algorithm_falls_back_to_levenshtein() {
-        let fallback =
-            eval_int("'nutshell' | str similarity 'nushell' --algorithm not-a-real-algo");
-        let lev = eval_int("'nutshell' | str similarity 'nushell' --algorithm levenshtein");
-        assert_eq!(fallback, lev);
+    fn unknown_algorithm_errors() {
+        assert_error_contains(
+            "'nutshell' | str similarity 'nushell' --algorithm not-a-real-algo",
+            "unknown algorithm",
+        );
     }
 
     #[test]

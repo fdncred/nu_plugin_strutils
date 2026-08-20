@@ -37,6 +37,10 @@ impl SimplePluginCommand for StrAfter {
         "Return the substring after a delimiter."
     }
 
+    fn extra_description(&self) -> &str {
+        "If the delimiter is missing, an empty string is returned unless --strict is set. Together with `str before`, this matches a partition: before keeps the whole string, after is empty."
+    }
+
     fn search_terms(&self) -> Vec<&str> {
         vec!["split", "substring", "suffix", "extract"]
     }

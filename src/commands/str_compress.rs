@@ -100,30 +100,35 @@ impl SimplePluginCommand for StrCompress {
         let use_flate = call.has_flag("flate")?;
         let use_zlib = call.has_flag("zlib")?;
 
-        // only allow window_size for brotli
-        if (use_flate && window_size.is_some()) || (use_zlib && window_size.is_some()) {
+        let using_brotli = match (use_brotli, use_flate, use_zlib) {
+            (true, false, false) | (false, false, false) => true,
+            (false, true, false) | (false, false, true) => false,
+            _ => {
+                return Err(LabeledError::new(
+                    "Only one compression method can be used at a time",
+                ));
+            }
+        };
+
+        if !using_brotli && window_size.is_some() {
             return Err(LabeledError::new(
                 "Window size is only for brotli compression",
             ));
-        };
+        }
 
-        // only allow quality level of 11 for brotli, if quality level for flate or zlib is greater than 9, set to 9
-        if (use_brotli && quality.map(|q| q.item > 11).unwrap_or(false))
-            || (quality.map(|q| q.item > 9).unwrap_or(false) && (use_flate || use_zlib))
-        {
+        let max_quality = if using_brotli { 11 } else { 9 };
+        if quality.map(|q| q.item > max_quality).unwrap_or(false) {
             return Err(LabeledError::new(
                 "Quality level is only between 0 and 11 for brotli, 0 and 9 for flate and zlib",
             ));
-        };
+        }
 
-        match (use_brotli, use_flate, use_zlib) {
-            (true, false, false) => do_brotli(input, quality, window_size, config, call.head),
-            (false, true, false) => do_flate(input, quality, config, call.head),
-            (false, false, true) => do_zlib(input, quality, config, call.head),
-            (false, false, false) => do_brotli(input, quality, window_size, config, call.head), // default to brotli
-            _ => Err(LabeledError::new(
-                "Only one compression method can be used at a time",
-            )),
+        if using_brotli {
+            do_brotli(input, quality, window_size, config, call.head)
+        } else if use_flate {
+            do_flate(input, quality, config, call.head)
+        } else {
+            do_zlib(input, quality, config, call.head)
         }
     }
 }
@@ -197,13 +202,13 @@ fn do_brotli(
     );
 
     write_value(&mut writer, value, value_span)?;
-    let _ = writer.flush().err_span(head).map_err(|err| {
-        ShellError::Generic(GenericError::new(
+    writer.flush().err_span(head).map_err(|err| {
+        LabeledError::from(ShellError::Generic(GenericError::new(
             err.item.to_string(),
-            "Error writing to brotli compressor".to_string(),
+            "error writing to brotli compressor".to_string(),
             value_span,
-        ))
-    });
+        )))
+    })?;
     drop(writer);
 
     Ok(Value::binary(out_buf, value_span))
@@ -224,12 +229,6 @@ fn write_value(
 #[test]
 fn test_examples() -> Result<(), nu_protocol::ShellError> {
     use nu_plugin_test_support::PluginTest;
-
-    // This will automatically run the examples specified in your command and compare their actual
-    // output against what was specified in the example.
-    //
-    // We recommend you add this test to any other commands you create, or remove it if the examples
-    // can't be tested this way.
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrCompress)
 }
@@ -436,6 +435,14 @@ mod tests {
         super::super::test_support::assert_error_contains(
             r#""x" | str compress --flate --window-size 10"#,
             "Window size is only for brotli",
+        );
+    }
+
+    #[test]
+    fn default_brotli_rejects_out_of_range_quality() {
+        super::super::test_support::assert_error_contains(
+            r#""x" | str compress --quality 99"#,
+            "Quality level is only between 0 and 11",
         );
     }
 }

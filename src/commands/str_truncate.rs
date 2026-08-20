@@ -18,7 +18,7 @@ impl SimplePluginCommand for StrTruncate {
     fn signature(&self) -> Signature {
         Signature::build(self.name())
             .input_output_types(vec![(Type::String, Type::String)])
-            .named(
+            .required_named(
                 "width",
                 SyntaxShape::Int,
                 "Maximum display width in columns.",
@@ -236,10 +236,7 @@ mod tests {
 
     #[test]
     fn missing_width_errors() {
-        super::super::test_support::assert_error_contains(
-            r#""hi" | str truncate"#,
-            "missing required flag",
-        );
+        super::super::test_support::assert_rejects(r#""hi" | str truncate"#);
     }
 
     #[test]

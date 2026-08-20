@@ -69,7 +69,7 @@ impl SimplePluginCommand for StrDecompress {
                     (true, false, false) => decompress_brotli(bytes, input.span())?,
                     (false, true, false) => decompress_flate(bytes, input.span())?,
                     (false, false, true) => decompress_zlib(bytes, input.span())?,
-                    (false, false, false) => decompress_brotli(bytes, input.span())?, // default to brotli
+                    (false, false, false) => decompress_brotli(bytes, input.span())?,
                     _ => {
                         return Err(LabeledError::new(
                             "Only one decompression method can be used at a time",
@@ -78,11 +78,9 @@ impl SimplePluginCommand for StrDecompress {
                     }
                 };
 
-                Ok(Value::string(
-                    String::from_utf8_lossy(&decompressed).to_string(),
-                    input.span(),
-                ))
+                decode_utf8(decompressed, input.span())
             }
+            Value::Error { .. } => Ok(input.clone()),
             _ => Err(LabeledError::new("Type mismatch")
                 .with_label(
                     format!("expected binary, found {}", input.get_type()),
@@ -90,6 +88,14 @@ impl SimplePluginCommand for StrDecompress {
                 )
                 .with_help("Only binary nushell values are supported.")),
         }
+    }
+}
+
+fn decode_utf8(bytes: Vec<u8>, span: nu_protocol::Span) -> Result<Value, LabeledError> {
+    match String::from_utf8(bytes) {
+        Ok(s) => Ok(Value::string(s, span)),
+        Err(_) => Err(LabeledError::new("decompressed data is not valid utf-8")
+            .with_label("output is not utf-8", span)),
     }
 }
 
@@ -124,12 +130,6 @@ fn decompress_zlib(bytes: &[u8], span: nu_protocol::Span) -> Result<Vec<u8>, Lab
 fn test_examples() -> Result<(), nu_protocol::ShellError> {
     use nu_plugin_test_support::PluginTest;
 
-    // This will automatically run the examples specified in your command and compare their actual
-    // output against what was specified in the example.
-    //
-    // We recommend you add this test to any other commands you create, or remove it if the examples
-    // can't be tested this way.
-
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrDecompress)
 }
 
@@ -156,5 +156,11 @@ mod tests {
             r#"0x[01 02 03 04] | str decompress --zlib"#,
             "decompression error",
         );
+    }
+
+    #[test]
+    fn invalid_utf8_errors() {
+        let err = super::decode_utf8(vec![0xff], nu_protocol::Span::test_data());
+        assert!(err.is_err());
     }
 }

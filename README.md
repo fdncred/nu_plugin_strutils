@@ -8,7 +8,7 @@ This is a [Nushell](https://nushell.sh/) plugin called "strutils".
 * `str compress` - Compress a string using brotli, flate, or zlib
 * `str decompress` - Decompress a string using brotli, flate, or zlib
 * `str dedent` - Remove common leading whitespace from text
-* `str indent` - Add leading spaces to each line of text
+* `str indent` - Prefix each line with a given string
 * `str deunicode` - Replace unicode characters with ASCII counterparts
 * `str shl-split` - Parse an argument string with Unix rules similar to Python's shlex.split and GLib's g_shell_parse_argv
 * `str shl-quote` - Escapes special characters in a string, so that it will retain its literal meaning when used as a part of command in Unix shell
@@ -133,9 +133,9 @@ The output is normalized between 0 and 1
 #### List the available algorithms and aliases
 
 ```nushell
-❯ "nushell" | str similarity "nutshell" --list
+❯ str similarity --list
 ╭────┬────────────────────────────┬──────────╮
-│  # │         algorithm          │  alias   │
+│  # │         algorithm          │  short   │
 ├────┼────────────────────────────┼──────────┤
 │  0 │ bag                        │ bag      │
 │  1 │ cosine                     │ cos      │
@@ -163,7 +163,7 @@ The output is normalized between 0 and 1
 │ 23 │ tversky                    │ tv       │
 │ 24 │ yujian_bo                  │ ybo      │
 ├────┼────────────────────────────┼──────────┤
-│  # │         algorithm          │  alias   │
+│  # │         algorithm          │  short   │
 ╰────┴────────────────────────────┴──────────╯
 ```
 
@@ -235,7 +235,7 @@ line 3
 ```
 
 ### str indent
-`str indent` adds a specified number of leading spaces to each line in a text.
+`str indent` prefixes each line with the given string.
 
 #### Usage:
 
@@ -327,6 +327,7 @@ country
 
 ### str before
 `str before` returns the substring before the first (or last) occurrence of a delimiter.
+If the delimiter is missing, the original string is returned unless `--strict` is set.
 
 ```nushell
 > "key=value=extra" | str before "="
@@ -340,6 +341,7 @@ a/b/c
 
 ### str after
 `str after` returns the substring after the first (or last) occurrence of a delimiter.
+If the delimiter is missing, an empty string is returned unless `--strict` is set.
 
 ```nushell
 > "key=value=extra" | str after "="
@@ -353,6 +355,7 @@ c.txt
 
 ### str between
 `str between` returns the substring between two delimiters.
+If either delimiter is missing, an empty string is returned unless `--strict` is set.
 
 ```nushell
 > "foo[bar]baz" | str between "[" "]"
