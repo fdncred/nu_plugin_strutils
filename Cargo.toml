@@ -1,6 +1,6 @@
 [package]
 name = "nu_plugin_strutils"
-version = "0.23.0"
+version = "0.24.0"
 authors = ["Darren Schroeder"]
 edition = "2024"
 description = "a collection of string utilities for nushell"
