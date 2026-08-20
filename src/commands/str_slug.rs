@@ -128,4 +128,22 @@ mod tests {
             _ => panic!("Expected string value"),
         }
     }
+
+    #[test]
+    fn empty_string() {
+        assert_eq!(super::super::test_support::eval_str(r#""" | str slug"#), "");
+    }
+
+    #[test]
+    fn already_a_slug() {
+        assert_eq!(
+            super::super::test_support::eval_str(r#""hello-world" | str slug"#),
+            "hello-world"
+        );
+    }
+
+    #[test]
+    fn rejects_non_string_input() {
+        super::super::test_support::assert_rejects("42 | str slug");
+    }
 }

@@ -264,3 +264,64 @@ fn test_examples() -> Result<(), nu_protocol::ShellError> {
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrSimilarity)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::test_support::{assert_error_contains, eval, eval_int, eval_list};
+
+    #[test]
+    fn alias_matches_full_name() {
+        let full = eval_int("'nutshell' | str similarity 'nushell' --algorithm levenshtein");
+        let alias = eval_int("'nutshell' | str similarity 'nushell' --algorithm lev");
+        assert_eq!(full, alias);
+        assert_eq!(full, 1);
+    }
+
+    #[test]
+    fn list_returns_all_algorithms() {
+        let rows = eval_list("str similarity 'nu' --list");
+        assert_eq!(rows.len(), 25);
+        let first = rows[0].as_record().expect("record");
+        assert!(first.contains("algorithm"));
+        assert!(first.contains("short"));
+    }
+
+    #[test]
+    fn all_returns_a_row_per_algorithm() {
+        let rows = eval_list("'nutshell' | str similarity 'nushell' --all");
+        assert_eq!(rows.len(), 25);
+    }
+
+    #[test]
+    fn all_normalized_distances_are_between_zero_and_one() {
+        let rows = eval_list("'nutshell' | str similarity 'nushell' --all --normalize");
+        for row in rows {
+            let rec = row.as_record().expect("record");
+            let distance = rec.get("distance").expect("distance").clone();
+            let n = match distance {
+                nu_protocol::Value::Int { val, .. } => val as f64,
+                nu_protocol::Value::Float { val, .. } => val,
+                other => panic!("unexpected distance {other:?}"),
+            };
+            assert!((0.0..=1.0).contains(&n), "{n}");
+        }
+    }
+
+    #[test]
+    fn unknown_algorithm_falls_back_to_levenshtein() {
+        let fallback =
+            eval_int("'nutshell' | str similarity 'nushell' --algorithm not-a-real-algo");
+        let lev = eval_int("'nutshell' | str similarity 'nushell' --algorithm levenshtein");
+        assert_eq!(fallback, lev);
+    }
+
+    #[test]
+    fn rejects_non_string_input() {
+        assert_error_contains("42 | str similarity 'x'", "requires some input");
+    }
+
+    #[test]
+    fn empty_strings_do_not_panic() {
+        let _ = eval("'' | str similarity ''");
+    }
+}

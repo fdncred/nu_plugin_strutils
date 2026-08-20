@@ -89,3 +89,30 @@ fn test_examples() -> Result<(), nu_protocol::ShellError> {
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrShlQuote)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::test_support::{assert_rejects, eval_str};
+
+    #[test]
+    fn quotes_string_with_spaces() {
+        let out = eval_str(r#""hello world" | str shl-quote"#);
+        assert!(out.contains("hello"), "{out}");
+        assert!(out.contains("world"), "{out}");
+    }
+
+    #[test]
+    fn simple_word_needs_no_quotes() {
+        assert_eq!(eval_str(r#""hello" | str shl-quote"#), "hello");
+    }
+
+    #[test]
+    fn empty_is_quoted() {
+        assert_eq!(eval_str(r#""" | str shl-quote"#), "''");
+    }
+
+    #[test]
+    fn rejects_non_string_input() {
+        assert_rejects("42 | str shl-quote");
+    }
+}

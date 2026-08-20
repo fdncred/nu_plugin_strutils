@@ -83,3 +83,28 @@ fn test_examples() -> Result<(), nu_protocol::ShellError> {
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrIndent)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::test_support::{assert_rejects, eval_str};
+
+    #[test]
+    fn indents_single_line() {
+        assert_eq!(eval_str(r#""hello" | str indent "  ""#), "  hello");
+    }
+
+    #[test]
+    fn indents_empty_string() {
+        assert_eq!(eval_str(r#""" | str indent "  ""#), "");
+    }
+
+    #[test]
+    fn tab_prefix() {
+        assert_eq!(eval_str(r#""a\nb" | str indent "\t""#), "\ta\n\tb");
+    }
+
+    #[test]
+    fn rejects_non_string_input() {
+        assert_rejects(r#"42 | str indent "  ""#);
+    }
+}

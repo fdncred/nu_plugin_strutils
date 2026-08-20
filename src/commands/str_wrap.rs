@@ -109,3 +109,31 @@ fn test_examples() -> Result<(), nu_protocol::ShellError> {
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrWrap)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::test_support::{assert_rejects, eval_str};
+
+    #[test]
+    fn short_string_is_unchanged() {
+        assert_eq!(eval_str(r#""hello" | str wrap --width 80"#), "hello");
+    }
+
+    #[test]
+    fn empty_string() {
+        assert_eq!(eval_str(r#""" | str wrap --width 10"#), "");
+    }
+
+    #[test]
+    fn default_width_wraps_long_line() {
+        let out = eval_str(
+            r#""aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" | str wrap"#,
+        );
+        assert!(out.contains('\n'), "{out}");
+    }
+
+    #[test]
+    fn rejects_non_string_input() {
+        assert_rejects("42 | str wrap");
+    }
+}

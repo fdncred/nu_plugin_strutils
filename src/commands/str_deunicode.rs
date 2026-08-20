@@ -74,3 +74,28 @@ fn test_examples() -> Result<(), nu_protocol::ShellError> {
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrDeunicode)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::test_support::{assert_rejects, eval_str};
+
+    #[test]
+    fn ascii_is_unchanged() {
+        assert_eq!(eval_str(r#"'hello' | str deunicode"#), "hello");
+    }
+
+    #[test]
+    fn accented_letters() {
+        assert_eq!(eval_str(r#"'Café' | str deunicode"#), "Cafe");
+    }
+
+    #[test]
+    fn empty_string() {
+        assert_eq!(eval_str(r#"'' | str deunicode"#), "");
+    }
+
+    #[test]
+    fn rejects_non_string_input() {
+        assert_rejects("42 | str deunicode");
+    }
+}

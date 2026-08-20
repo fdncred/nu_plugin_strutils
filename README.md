@@ -4,16 +4,24 @@ This is a [Nushell](https://nushell.sh/) plugin called "strutils".
 
 ## Available Commands
 
-* `str similarity` - Calculate edit distance between strings using various * `str compress` - Compress a string using brotli, flate, or zlib
+* `str similarity` - Calculate edit distance between strings using various algorithms
+* `str compress` - Compress a string using brotli, flate, or zlib
 * `str decompress` - Decompress a string using brotli, flate, or zlib
 * `str dedent` - Remove common leading whitespace from text
 * `str indent` - Add leading spaces to each line of text
 * `str deunicode` - Replace unicode characters with ASCII counterparts
-* `str shl-split` - Parse an argument string with Unix rules similar to Python's shlex.split and GLib's g_shell_parse_argv.
-* `str shl-quote` - Escapes special characters in a string, so that it will retain its literal meaning when used as a part of command in Unix shell.
-algorithms
+* `str shl-split` - Parse an argument string with Unix rules similar to Python's shlex.split and GLib's g_shell_parse_argv
+* `str shl-quote` - Escapes special characters in a string, so that it will retain its literal meaning when used as a part of command in Unix shell
 * `str slug` - Convert a string to a slug (URL/filename friendly)
 * `str wrap` - Wrap text to a specified width
+* `str before` - Return the substring before a delimiter
+* `str after` - Return the substring after a delimiter
+* `str between` - Return the substring between two delimiters
+* `str increment` - Increment the last run of decimal digits, keeping zero-padding
+* `str truncate` - Truncate (and optionally pad) a string by terminal display width
+* `str align` - Align delimited columns using elastic tabstops
+* `str common-prefix` - Return the longest common prefix of two strings or a list of strings
+* `str unescape` - Interpret C / Rust / JSON-style backslash escape sequences
 
 ## Installing
 
@@ -315,4 +323,107 @@ to come
 to the aid
 of their
 country
+```
+
+### str before
+`str before` returns the substring before the first (or last) occurrence of a delimiter.
+
+```nushell
+> "key=value=extra" | str before "="
+key
+```
+
+```nushell
+> "a/b/c.txt" | str before --last "."
+a/b/c
+```
+
+### str after
+`str after` returns the substring after the first (or last) occurrence of a delimiter.
+
+```nushell
+> "key=value=extra" | str after "="
+value=extra
+```
+
+```nushell
+> "a/b/c.txt" | str after --last "/"
+c.txt
+```
+
+### str between
+`str between` returns the substring between two delimiters.
+
+```nushell
+> "foo[bar]baz" | str between "[" "]"
+bar
+```
+
+### str increment
+`str increment` increments the last run of decimal digits and keeps zero-padding.
+
+```nushell
+> "img001.png" | str increment
+img002.png
+```
+
+```nushell
+> "v1.2.9" | str increment
+v1.2.10
+```
+
+### str truncate
+`str truncate` truncates (and optionally pads) a string by terminal display width.
+
+```nushell
+> "now is the time" | str truncate --width 10
+now is th…
+```
+
+```nushell
+> "hi" | str truncate --width 6 --pad
+hi    
+```
+
+### str align
+`str align` aligns delimited columns using elastic tabstops.
+
+```nushell
+> "name\tcount\nalice\t12\nbob\t3" | str align
+name   count
+alice  12
+bob    3
+```
+
+```nushell
+> "a,bb,ccc\n1,2,3" | str align --separator ","
+a   bb  ccc
+1   2   3
+```
+
+### str common-prefix
+`str common-prefix` returns the longest common prefix of two strings or a list of strings.
+
+```nushell
+> ["src/commands/mod.rs" "src/commands/str_slug.rs"] | str common-prefix
+src/commands/
+```
+
+```nushell
+> "foobar" | str common-prefix "foobaz"
+fooba
+```
+
+### str unescape
+`str unescape` interprets C / Rust / JSON-style backslash escapes.
+
+```nushell
+> 'hello\nworld' | str unescape
+hello
+world
+```
+
+```nushell
+> 'crab: \u{1F980}' | str unescape
+crab: 🦀
 ```

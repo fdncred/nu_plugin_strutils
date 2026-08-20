@@ -119,3 +119,39 @@ fn test_examples() -> Result<(), nu_protocol::ShellError> {
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrShlSplit)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::test_support::{assert_rejects, eval, eval_list};
+
+    #[test]
+    fn splits_quoted_argument() {
+        let vals = eval_list(r#""a 'b c' d" | str shl-split"#);
+        let strings: Vec<_> = vals
+            .iter()
+            .map(|v| v.as_str().expect("string").to_string())
+            .collect();
+        assert_eq!(strings, ["a", "b c", "d"]);
+    }
+
+    #[test]
+    fn empty_string_is_empty_list() {
+        let vals = eval_list(r#""" | str shl-split"#);
+        assert!(vals.is_empty(), "{vals:?}");
+    }
+
+    #[test]
+    fn unmatched_quote_errors() {
+        let result = eval(r#""'unterminated" | str shl-split"#);
+        match result {
+            Err(_) => {}
+            Ok(nu_protocol::Value::Error { .. }) => {}
+            Ok(other) => panic!("expected error, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn rejects_non_string_input() {
+        assert_rejects("42 | str shl-split");
+    }
+}

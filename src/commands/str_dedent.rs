@@ -74,3 +74,31 @@ fn test_examples() -> Result<(), nu_protocol::ShellError> {
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrDedent)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::test_support::{assert_rejects, eval_str};
+
+    #[test]
+    fn already_flush_is_unchanged() {
+        assert_eq!(eval_str(r#""a\nb\n" | str dedent"#), "a\nb\n");
+    }
+
+    #[test]
+    fn empty_string() {
+        assert_eq!(eval_str(r#""" | str dedent"#), "");
+    }
+
+    #[test]
+    fn preserves_relative_indent() {
+        assert_eq!(
+            eval_str(r#""    a\n      b\n    c" | str dedent"#),
+            "a\n  b\nc"
+        );
+    }
+
+    #[test]
+    fn rejects_non_string_input() {
+        assert_rejects("42 | str dedent");
+    }
+}

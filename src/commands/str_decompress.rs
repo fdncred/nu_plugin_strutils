@@ -132,3 +132,29 @@ fn test_examples() -> Result<(), nu_protocol::ShellError> {
 
     PluginTest::new("strutils", StrutilsPlugin.into())?.test_command_examples(&StrDecompress)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::test_support::{assert_error_contains, assert_rejects};
+
+    #[test]
+    fn rejects_non_binary_input() {
+        assert_rejects(r#""not binary" | str decompress --brotli"#);
+    }
+
+    #[test]
+    fn multiple_methods_error() {
+        assert_error_contains(
+            r#""ABCDEFG" | str compress --brotli | str decompress --brotli --zlib"#,
+            "Only one decompression method",
+        );
+    }
+
+    #[test]
+    fn garbage_bytes_error() {
+        assert_error_contains(
+            r#"0x[01 02 03 04] | str decompress --zlib"#,
+            "decompression error",
+        );
+    }
+}

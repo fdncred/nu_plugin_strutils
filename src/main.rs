@@ -1,4 +1,4 @@
-use nu_plugin::{serve_plugin, MsgPackSerializer, Plugin, PluginCommand};
+use nu_plugin::{MsgPackSerializer, Plugin, PluginCommand, serve_plugin};
 
 mod commands;
 pub use commands::*;
@@ -25,6 +25,14 @@ impl Plugin for StrutilsPlugin {
             Box::new(StrSlug),
             Box::new(StrShlSplit),
             Box::new(StrShlQuote),
+            Box::new(StrBefore),
+            Box::new(StrAfter),
+            Box::new(StrBetween),
+            Box::new(StrIncrement),
+            Box::new(StrTruncate),
+            Box::new(StrAlign),
+            Box::new(StrCommonPrefix),
+            Box::new(StrUnescape),
         ]
     }
 }

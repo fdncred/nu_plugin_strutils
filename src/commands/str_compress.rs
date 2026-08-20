@@ -84,13 +84,11 @@ impl SimplePluginCommand for StrCompress {
         call: &EvaluatedCall,
         input: &Value,
     ) -> Result<Value, LabeledError> {
-        fn to_u32(n: Spanned<i64>) -> Result<Spanned<u32>, ShellError> {
+        fn to_u32(n: Spanned<i64>) -> Result<Spanned<u32>, LabeledError> {
             u32::try_from(n.item)
-                .map_err(|err| ShellError::CantConvert {
-                    to_type: "u32".into(),
-                    from_type: "int".into(),
-                    span: n.span,
-                    help: Some(err.to_string()),
+                .map_err(|err| {
+                    LabeledError::new("can't convert int to u32")
+                        .with_label(err.to_string(), n.span)
                 })
                 .map(|o| o.into_spanned(n.span))
         }
@@ -211,13 +209,13 @@ fn do_brotli(
     Ok(Value::binary(out_buf, value_span))
 }
 
-fn write_value(out: &mut impl std::io::Write, value: String, span: Span) -> Result<(), ShellError> {
+fn write_value(
+    out: &mut impl std::io::Write,
+    value: String,
+    span: Span,
+) -> Result<(), LabeledError> {
     out.write_all(value.as_bytes()).map_err(|err| {
-        ShellError::Generic(GenericError::new(
-            err.to_string(),
-            "Error writing to brotli compressor".to_string(),
-            span,
-        ))
+        LabeledError::new("error writing to compressor").with_label(err.to_string(), span)
     })?;
 
     Ok(())
@@ -383,5 +381,61 @@ mod tests {
         do_zlib(&large_input, None, config.clone(), Span::test_data())?;
 
         Ok(())
+    }
+
+    #[test]
+    fn roundtrip_brotli() {
+        assert_eq!(
+            super::super::test_support::eval_str(
+                r#""ABCDEFG" | str compress --brotli | str decompress --brotli"#
+            ),
+            "ABCDEFG"
+        );
+    }
+
+    #[test]
+    fn roundtrip_flate() {
+        assert_eq!(
+            super::super::test_support::eval_str(
+                r#""ABCDEFG" | str compress --flate | str decompress --flate"#
+            ),
+            "ABCDEFG"
+        );
+    }
+
+    #[test]
+    fn roundtrip_zlib() {
+        assert_eq!(
+            super::super::test_support::eval_str(
+                r#""ABCDEFG" | str compress --zlib | str decompress --zlib"#
+            ),
+            "ABCDEFG"
+        );
+    }
+
+    #[test]
+    fn default_method_is_brotli() {
+        assert_eq!(
+            super::super::test_support::eval_str(
+                r#""ABCDEFG" | str compress | str decompress --brotli"#
+            ),
+            "ABCDEFG"
+        );
+    }
+
+    #[test]
+    fn multiple_methods_error() {
+        super::super::test_support::assert_error_contains(
+            r#""x" | str compress --brotli --flate"#,
+            "Only one compression method",
+        );
+    }
+
+    #[test]
+    fn window_size_rejected_for_flate() {
+        super::super::test_support::assert_error_contains(
+            r#""x" | str compress --flate --window-size 10"#,
+            "Window size is only for brotli",
+        );
     }
 }
